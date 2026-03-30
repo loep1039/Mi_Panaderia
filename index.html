@@ -273,7 +273,7 @@
             <i class="fas fa-bell"></i>
         </div>
         <div class="alarma-indicador">
-            <i class="fas fa-volume-up"></i> Alarma sonora de 3 segundos al finalizar
+            <i class="fas fa-volume-up"></i> Alarma de 8 segundos al finalizar
         </div>
 
         <footer>
@@ -285,8 +285,9 @@
         let tiempoRestante = 0;
         let temporizadorActivo = false;
         let intervalo = null;
+        let alarmaActiva = false;
         let contextoAudio = null;
-        let osciladorActivo = null;
+        let osciladoresActivos = [];
 
         function actualizarDisplay() {
             const minutos = Math.floor(tiempoRestante / 60);
@@ -325,7 +326,7 @@
                 intervalo = null;
             }
             temporizadorActivo = false;
-            detenerAlarma(); // Detener cualquier alarma activa
+            detenerAlarma();
         }
 
         function reiniciarCronometro() {
@@ -347,88 +348,132 @@
         }
 
         function detenerAlarma() {
-            if (osciladorActivo) {
+            alarmaActiva = false;
+            
+            // Detener todos los osciladores activos
+            osciladoresActivos.forEach(oscilador => {
                 try {
-                    osciladorActivo.stop();
-                    osciladorActivo = null;
+                    oscilador.stop();
                 } catch(e) {}
-            }
+            });
+            osciladoresActivos = [];
+            
             if (contextoAudio) {
                 try {
                     contextoAudio.close();
-                    contextoAudio = null;
                 } catch(e) {}
+                contextoAudio = null;
             }
         }
 
         function reproducirAlarmaLarga() {
-            // Detener cualquier alarma previa
-            detenerAlarma();
+            if (alarmaActiva) return;
+            alarmaActiva = true;
             
             try {
-                // Crear contexto de audio
+                // Crear contexto de audio (necesita interacción del usuario, pero el botón ya inició)
                 contextoAudio = new (window.AudioContext || window.webkitAudioContext)();
                 
-                // Función para reproducir un beep con frecuencia y duración específica
-                const reproducirBeep = (frecuencia, duracion, tiempoInicio) => {
-                    const oscilador = contextoAudio.createOscillator();
-                    const gainNode = contextoAudio.createGain();
+                const duracionTotal = 8; // 8 segundos de alarma
+                const inicio = contextoAudio.currentTime;
+                
+                // Crear un oscilador de onda cuadrada para sonido más fuerte
+                const crearOscilador = (frecuencia, inicioOffset, duracion, volumen = 0.3) => {
+                    const osc = contextoAudio.createOscillator();
+                    const gain = contextoAudio.createGain();
                     
-                    oscilador.connect(gainNode);
-                    gainNode.connect(contextoAudio.destination);
+                    osc.type = 'square'; // Onda cuadrada = sonido más fuerte y notorio
+                    osc.frequency.value = frecuencia;
                     
-                    oscilador.frequency.value = frecuencia;
-                    gainNode.gain.value = 0.4;
+                    gain.gain.value = 0;
+                    osc.connect(gain);
+                    gain.connect(contextoAudio.destination);
                     
-                    oscilador.start(tiempoInicio);
-                    gainNode.gain.exponentialRampToValueAtTime(0.00001, tiempoInicio + duracion);
-                    oscilador.stop(tiempoInicio + duracion);
+                    // Envolvente: fade in rápido, luego fade out
+                    const tiempoInicio = inicio + inicioOffset;
+                    gain.gain.setValueAtTime(0, tiempoInicio);
+                    gain.gain.linearRampToValueAtTime(volumen, tiempoInicio + 0.05);
+                    gain.gain.exponentialRampToValueAtTime(0.00001, tiempoInicio + duracion);
                     
-                    return oscilador;
+                    osc.start(tiempoInicio);
+                    osc.stop(tiempoInicio + duracion);
+                    
+                    osciladoresActivos.push(osc);
+                    return osc;
                 };
                 
-                const ahora = contextoAudio.currentTime;
+                // Secuencia de 8 segundos: sonido continuo con variaciones
+                // 0-2s: Pitido continuo 880 Hz
+                crearOscilador(880, 0, 2.0, 0.4);
+                // 2-3s: Pitido 440 Hz (más grave)
+                crearOscilador(440, 2.0, 1.0, 0.45);
+                // 3-5s: Pitido 880 Hz
+                crearOscilador(880, 3.0, 2.0, 0.4);
+                // 5-6s: Pitido 660 Hz
+                crearOscilador(660, 5.0, 1.0, 0.45);
+                // 6-8s: Pitido 880 Hz con volumen creciente y decreciente
+                const oscFinal = contextoAudio.createOscillator();
+                const gainFinal = contextoAudio.createGain();
+                oscFinal.type = 'square';
+                oscFinal.frequency.value = 880;
+                oscFinal.connect(gainFinal);
+                gainFinal.connect(contextoAudio.destination);
                 
-                // Secuencia de alarma de 3 segundos: patrón de pitidos
-                // Pitido 1: 880 Hz (La5) - 0.5s
-                reproducirBeep(880, 0.5, ahora);
-                // Pitido 2: 880 Hz - 0.5s (con pausa)
-                reproducirBeep(880, 0.5, ahora + 0.8);
-                // Pitido 3: 440 Hz (La4) más grave - 0.6s
-                reproducirBeep(440, 0.6, ahora + 1.6);
-                // Pitido 4: 880 Hz - 0.5s
-                reproducirBeep(880, 0.5, ahora + 2.4);
-                // Pitido final prolongado: 660 Hz - 1s
-                reproducirBeep(660, 1.0, ahora + 3.0);
+                gainFinal.gain.setValueAtTime(0, inicio + 6);
+                gainFinal.gain.linearRampToValueAtTime(0.5, inicio + 6.2);
+                gainFinal.gain.linearRampToValueAtTime(0.5, inicio + 7.5);
+                gainFinal.gain.exponentialRampToValueAtTime(0.00001, inicio + 8.0);
                 
-                // Vibración para móviles (3 patrones)
+                oscFinal.start(inicio + 6);
+                oscFinal.stop(inicio + 8);
+                osciladoresActivos.push(oscFinal);
+                
+                // Auto-detener alarma después de 8 segundos
+                setTimeout(() => {
+                    if (alarmaActiva) {
+                        detenerAlarma();
+                    }
+                }, 8500);
+                
+                // Vibración larga para móviles (patrón de 8 segundos)
                 if ('vibrate' in navigator) {
-                    navigator.vibrate([500, 300, 500, 300, 800]);
+                    navigator.vibrate([
+                        500, 200,  // 0-0.7s
+                        500, 200,  // 0.7-1.4s
+                        500, 200,  // 1.4-2.1s
+                        500, 200,  // 2.1-2.8s
+                        500, 200,  // 2.8-3.5s
+                        500, 200,  // 3.5-4.2s
+                        500, 200,  // 4.2-4.9s
+                        500, 200,  // 4.9-5.6s
+                        500, 200,  // 5.6-6.3s
+                        500, 200,  // 6.3-7.0s
+                        500        // 7.0-7.5s
+                    ]);
                 }
                 
-                // Guardar referencia para poder detener
-                osciladorActivo = null; // No hay un solo oscilador, son varios
-                
             } catch(e) {
-                console.log('Alarma no disponible en este navegador');
-                // Fallback: alerta visual intensa
+                console.log('Alarma no disponible:', e);
+                // Fallback visual intenso
                 const alerta = document.getElementById('alerta');
                 alerta.style.backgroundColor = '#e53e3e';
                 alerta.style.color = 'white';
+                alerta.style.fontSize = '1rem';
                 setTimeout(() => {
                     alerta.style.backgroundColor = '';
                     alerta.style.color = '';
-                }, 3000);
+                    alerta.style.fontSize = '';
+                }, 8000);
             }
         }
 
         function mostrarAlerta() {
             const alerta = document.getElementById('alerta');
             alerta.classList.add('show');
-            // Auto-ocultar después de 6 segundos
+            // Auto-ocultar después de 9 segundos
             setTimeout(() => {
                 ocultarAlerta();
-            }, 6000);
+            }, 9000);
         }
 
         function ocultarAlerta() {
@@ -436,7 +481,7 @@
             alerta.classList.remove('show');
         }
 
-        // Inicializar con valor por defecto
+        // Inicializar
         window.onload = () => {
             setTiempo(20);
         };
