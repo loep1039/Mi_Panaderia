@@ -51,7 +51,6 @@
             padding-bottom: 6px;
         }
 
-        /* Selector de tiempo */
         .time-selector {
             margin-bottom: 24px;
         }
@@ -93,7 +92,6 @@
             box-shadow: 0 0 0 2px rgba(210, 105, 30, 0.2);
         }
 
-        /* Display del cronómetro */
         .display {
             background: #f9f0e4;
             border-radius: 60px;
@@ -110,7 +108,6 @@
             letter-spacing: 5px;
         }
 
-        /* Botones */
         .buttons {
             display: flex;
             gap: 12px;
@@ -167,7 +164,6 @@
             transform: translateY(1px);
         }
 
-        /* Mensaje de alerta */
         .alert-message {
             background: #fef5e8;
             border-radius: 40px;
@@ -190,7 +186,6 @@
             100% { transform: scale(1); opacity: 1; }
         }
 
-        /* Presets rápidos */
         .presets {
             display: flex;
             gap: 8px;
@@ -220,6 +215,16 @@
             margin-top: 20px;
             font-size: 0.7rem;
             color: #b48c62;
+        }
+
+        .alarma-indicador {
+            font-size: 0.7rem;
+            color: #D2691E;
+            margin-top: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
         }
     </style>
 </head>
@@ -267,9 +272,12 @@
             🎉 ¡El pan está listo! 🎉
             <i class="fas fa-bell"></i>
         </div>
+        <div class="alarma-indicador">
+            <i class="fas fa-volume-up"></i> Alarma sonora de 3 segundos al finalizar
+        </div>
 
         <footer>
-            <i class="fas fa-volume-up"></i> Alarma sonora al finalizar
+            <i class="fas fa-clock"></i> Temporizador profesional para panadería
         </footer>
     </div>
 
@@ -277,6 +285,8 @@
         let tiempoRestante = 0;
         let temporizadorActivo = false;
         let intervalo = null;
+        let contextoAudio = null;
+        let osciladorActivo = null;
 
         function actualizarDisplay() {
             const minutos = Math.floor(tiempoRestante / 60);
@@ -300,7 +310,7 @@
             intervalo = setInterval(() => {
                 if (tiempoRestante <= 0) {
                     detenerCronometro();
-                    reproducirAlarma();
+                    reproducirAlarmaLarga();
                     mostrarAlerta();
                 } else {
                     tiempoRestante--;
@@ -315,6 +325,7 @@
                 intervalo = null;
             }
             temporizadorActivo = false;
+            detenerAlarma(); // Detener cualquier alarma activa
         }
 
         function reiniciarCronometro() {
@@ -323,6 +334,7 @@
             tiempoRestante = minutos * 60;
             actualizarDisplay();
             ocultarAlerta();
+            detenerAlarma();
         }
 
         function setTiempo(minutos) {
@@ -331,34 +343,74 @@
             tiempoRestante = minutos * 60;
             actualizarDisplay();
             ocultarAlerta();
+            detenerAlarma();
         }
 
-        function reproducirAlarma() {
+        function detenerAlarma() {
+            if (osciladorActivo) {
+                try {
+                    osciladorActivo.stop();
+                    osciladorActivo = null;
+                } catch(e) {}
+            }
+            if (contextoAudio) {
+                try {
+                    contextoAudio.close();
+                    contextoAudio = null;
+                } catch(e) {}
+            }
+        }
+
+        function reproducirAlarmaLarga() {
+            // Detener cualquier alarma previa
+            detenerAlarma();
+            
             try {
-                // Usar Web Audio API para generar un beep
-                const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-                const oscillator = audioContext.createOscillator();
-                const gainNode = audioContext.createGain();
+                // Crear contexto de audio
+                contextoAudio = new (window.AudioContext || window.webkitAudioContext)();
                 
-                oscillator.connect(gainNode);
-                gainNode.connect(audioContext.destination);
+                // Función para reproducir un beep con frecuencia y duración específica
+                const reproducirBeep = (frecuencia, duracion, tiempoInicio) => {
+                    const oscilador = contextoAudio.createOscillator();
+                    const gainNode = contextoAudio.createGain();
+                    
+                    oscilador.connect(gainNode);
+                    gainNode.connect(contextoAudio.destination);
+                    
+                    oscilador.frequency.value = frecuencia;
+                    gainNode.gain.value = 0.4;
+                    
+                    oscilador.start(tiempoInicio);
+                    gainNode.gain.exponentialRampToValueAtTime(0.00001, tiempoInicio + duracion);
+                    oscilador.stop(tiempoInicio + duracion);
+                    
+                    return oscilador;
+                };
                 
-                oscillator.frequency.value = 880; // Nota La5
-                gainNode.gain.value = 0.3;
+                const ahora = contextoAudio.currentTime;
                 
-                oscillator.start();
+                // Secuencia de alarma de 3 segundos: patrón de pitidos
+                // Pitido 1: 880 Hz (La5) - 0.5s
+                reproducirBeep(880, 0.5, ahora);
+                // Pitido 2: 880 Hz - 0.5s (con pausa)
+                reproducirBeep(880, 0.5, ahora + 0.8);
+                // Pitido 3: 440 Hz (La4) más grave - 0.6s
+                reproducirBeep(440, 0.6, ahora + 1.6);
+                // Pitido 4: 880 Hz - 0.5s
+                reproducirBeep(880, 0.5, ahora + 2.4);
+                // Pitido final prolongado: 660 Hz - 1s
+                reproducirBeep(660, 1.0, ahora + 3.0);
                 
-                setTimeout(() => {
-                    oscillator.stop();
-                    audioContext.close();
-                }, 800);
-                
-                // Vibración para móviles
+                // Vibración para móviles (3 patrones)
                 if ('vibrate' in navigator) {
-                    navigator.vibrate([500, 300, 500]);
+                    navigator.vibrate([500, 300, 500, 300, 800]);
                 }
+                
+                // Guardar referencia para poder detener
+                osciladorActivo = null; // No hay un solo oscilador, son varios
+                
             } catch(e) {
-                console.log('Alarma no disponible');
+                console.log('Alarma no disponible en este navegador');
                 // Fallback: alerta visual intensa
                 const alerta = document.getElementById('alerta');
                 alerta.style.backgroundColor = '#e53e3e';
@@ -366,17 +418,17 @@
                 setTimeout(() => {
                     alerta.style.backgroundColor = '';
                     alerta.style.color = '';
-                }, 1000);
+                }, 3000);
             }
         }
 
         function mostrarAlerta() {
             const alerta = document.getElementById('alerta');
             alerta.classList.add('show');
-            // Auto-ocultar después de 5 segundos
+            // Auto-ocultar después de 6 segundos
             setTimeout(() => {
                 ocultarAlerta();
-            }, 5000);
+            }, 6000);
         }
 
         function ocultarAlerta() {
