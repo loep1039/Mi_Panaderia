@@ -3,23 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-    <title>Cronómetro Sencillo | Timer de Horneado</title>
+    <title>Cronómetro | Estilo Reloj Digital Antiguo</title>
     <style>
         /* ============================================================ */
-        /* LÍNEAS 15-85: CÓDIGO CSS (Estilos visuales)                  */
+        /* LÍNEAS 15-120: CÓDIGO CSS - Estilo reloj digital antiguo     */
         /* ============================================================ */
         
-        /* Línea 17-20: Reset global - elimina márgenes y paddings */
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
 
-        /* Línea 23-32: Estilo del cuerpo - fondo, centrado, tipografía */
+        /* Fondo oscuro estilo vintage */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #fef7e8 0%, #fcf3e3 100%);
+            font-family: 'Courier New', 'VT323', monospace;
+            background: linear-gradient(145deg, #1a1a1a 0%, #0a0a0a 100%);
             min-height: 100vh;
             display: flex;
             justify-content: center;
@@ -27,124 +26,205 @@
             padding: 20px;
         }
 
-        /* Línea 35-43: Tarjeta principal - fondo blanco, bordes redondeados */
+        /* Tarjeta con efecto de panel vintage */
         .timer-card {
-            background: white;
+            background: #0f0f0f;
             border-radius: 32px;
-            padding: 32px 24px;
-            max-width: 380px;
+            padding: 32px 28px;
+            max-width: 500px;
             width: 100%;
             text-align: center;
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
-            border: 1px solid #eeddcb;
+            box-shadow: 
+                0 20px 40px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05);
+            border: 1px solid #2a2a2a;
         }
 
-        /* Línea 46-52: Título principal */
+        /* Título estilo vintage */
         h1 {
-            font-size: 1.6rem;
-            color: #8B4513;
+            font-size: 1.3rem;
+            color: #b87c4a;
             margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
+            font-family: 'Courier New', monospace;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            font-weight: normal;
+            text-shadow: 0 0 5px rgba(184, 124, 74, 0.3);
         }
 
-        /* Línea 55-59: Subtítulo */
         .subtitle {
-            color: #8B7355;
-            font-size: 0.8rem;
+            color: #6a6a6a;
+            font-size: 0.65rem;
             margin-bottom: 28px;
-            border-bottom: 2px solid #eeddcb;
-            display: inline-block;
-            padding-bottom: 6px;
+            letter-spacing: 2px;
+            font-family: monospace;
         }
 
-        /* Línea 62-76: Selector de minutos */
+        /* Selector de tiempo estilo vintage */
         .time-selector {
             margin-bottom: 28px;
         }
 
         .time-selector label {
             display: block;
-            font-size: 0.7rem;
+            font-size: 0.6rem;
             text-transform: uppercase;
-            font-weight: 600;
-            color: #8B7355;
-            letter-spacing: 1px;
+            font-weight: normal;
+            color: #8b8b8b;
+            letter-spacing: 2px;
             margin-bottom: 10px;
+            font-family: monospace;
         }
 
         .time-input {
-            background: #f9f0e4;
-            border: 1.5px solid #eeddcb;
-            border-radius: 40px;
+            background: #1a1a1a;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
             padding: 12px 20px;
             font-size: 1.2rem;
-            font-weight: 600;
-            color: #2c2418;
+            font-weight: normal;
+            color: #d48c4a;
             width: 120px;
             text-align: center;
             outline: none;
             font-family: monospace;
+            font-size: 1.3rem;
+            box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.5);
         }
 
         .time-input:focus {
-            border-color: #D2691E;
+            border-color: #d48c4a;
+            box-shadow: 0 0 8px rgba(212, 140, 74, 0.3);
         }
 
-        /* Línea 79-89: Display del cronómetro */
+        /* ============================================================ */
+        /* DISPLAY ESTILO RELOJ DIGITAL ANTIGUO (LED)                   */
+        /* ============================================================ */
         .display {
-            background: #f9f0e4;
-            border-radius: 60px;
+            background: #050505;
+            border-radius: 20px;
             padding: 28px 20px;
             margin-bottom: 28px;
-            border: 2px solid #eeddcb;
+            border: 1px solid #2a2a2a;
+            box-shadow: 
+                inset 0 0 30px rgba(0, 0, 0, 0.8),
+                0 5px 15px rgba(0, 0, 0, 0.3);
+            position: relative;
         }
 
+        /* Efecto de vidrio envejecido */
+        .display::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(210, 105, 30, 0.05) 0%, rgba(0, 0, 0, 0) 70%);
+            pointer-events: none;
+            border-radius: 20px;
+        }
+
+        /* Estilo del dígito LED vintage */
         .cronometro {
-            font-family: monospace;
-            font-size: 3.5rem;
-            font-weight: 700;
-            color: #D2691E;
-            letter-spacing: 5px;
+            font-family: 'Courier New', 'VT323', 'Share Tech Mono', monospace;
+            font-size: 4.5rem;
+            font-weight: bold;
+            color: #ff6a2e;
+            text-shadow: 
+                0 0 5px #ff6a2e,
+                0 0 10px #ff6a2e,
+                0 0 15px #ff3a00,
+                0 0 20px rgba(255, 58, 0, 0.5);
+            letter-spacing: 8px;
+            background: linear-gradient(135deg, #ff8c4a 0%, #ff4a1a 100%);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            text-shadow: none;
+            position: relative;
         }
 
-        /* Línea 92-103: Botón único */
+        /* Efecto de brillo pulsante */
+        .cronometro::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at center, rgba(255, 106, 46, 0.3) 0%, rgba(0, 0, 0, 0) 70%);
+            pointer-events: none;
+            animation: pulse-glow 2s infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.8; }
+        }
+
+        /* Efecto de líneas de escaneo (vintage CRT) */
+        .display::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.1) 0px,
+                rgba(0, 0, 0, 0.1) 2px,
+                transparent 2px,
+                transparent 4px
+            );
+            pointer-events: none;
+            border-radius: 20px;
+        }
+
+        /* Botón estilo vintage */
         .buttons {
             margin-bottom: 20px;
         }
 
         .btn-start {
-            background: linear-gradient(135deg, #D2691E, #B85C1A);
-            color: white;
-            border: none;
+            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+            color: #d48c4a;
+            border: 1px solid #3a3a3a;
             padding: 14px 32px;
             border-radius: 50px;
-            font-weight: 600;
+            font-weight: 500;
             font-size: 1rem;
             display: inline-flex;
             align-items: center;
             gap: 10px;
             cursor: pointer;
             transition: all 0.2s ease;
-            box-shadow: 0 4px 12px rgba(210, 105, 30, 0.3);
             width: 100%;
             justify-content: center;
+            font-family: monospace;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
         }
 
         .btn-start:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(210, 105, 30, 0.4);
+            background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
+            color: #ff9a5a;
+            border-color: #d48c4a;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
         }
 
         .btn-start:active {
             transform: translateY(1px);
         }
 
-        /* Línea 106-119: Mensaje de alerta */
+        /* Mensaje de alerta estilo vintage */
         .alert-message {
-            background: #fef5e8;
+            background: #1a1a1a;
+            border: 1px solid #d48c4a;
             border-radius: 40px;
             padding: 12px;
             display: none;
@@ -152,9 +232,11 @@
             justify-content: center;
             gap: 10px;
             font-weight: 500;
-            color: #D2691E;
+            color: #d48c4a;
             animation: pulse 0.5s ease;
             margin-top: 12px;
+            font-family: monospace;
+            font-size: 0.8rem;
         }
 
         .alert-message.show {
@@ -162,196 +244,156 @@
         }
 
         @keyframes pulse {
-            0% { transform: scale(0.95); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
+            0% { transform: scale(0.95); opacity: 0; border-color: #ff6a2e; }
+            100% { transform: scale(1); opacity: 1; border-color: #d48c4a; }
         }
 
-        /* Línea 122-127: Footer */
+        /* Footer */
         footer {
             margin-top: 16px;
-            font-size: 0.65rem;
-            color: #b48c62;
+            font-size: 0.55rem;
+            color: #5a5a5a;
+            font-family: monospace;
+            letter-spacing: 1px;
         }
 
-        /* Línea 130-141: Responsive para móviles */
+        /* Responsive */
         @media (max-width: 480px) {
+            .timer-card {
+                padding: 24px 20px;
+            }
             .cronometro {
                 font-size: 2.5rem;
-                letter-spacing: 3px;
+                letter-spacing: 4px;
             }
             .btn-start {
                 padding: 12px 24px;
-                font-size: 0.9rem;
+                font-size: 0.75rem;
             }
-            .timer-card {
-                padding: 24px 20px;
+            h1 {
+                font-size: 1rem;
             }
         }
     </style>
 </head>
 <body>
     <!-- ============================================================ -->
-    <!-- LÍNEAS 145-199: CÓDIGO HTML (Estructura de la página)        -->
+    <!-- LÍNEAS 140-200: CÓDIGO HTML - Estructura de la página        -->
     <!-- ============================================================ -->
     
     <div class="timer-card">
-        <!-- Línea 148-152: Encabezado con icono -->
+        <!-- Encabezado estilo vintage -->
         <h1>
-            <i class="fas fa-stopwatch" style="font-size: 1.4rem;"></i>
-            Cronómetro
+            <i class="fas fa-stopwatch" style="font-size: 1.2rem;"></i>
+            TIMER
         </h1>
-        <div class="subtitle">⏱️ Tiempo de horneado</div>
+        <div class="subtitle">⚡ HORNEADO ARTESANAL ⚡</div>
 
-        <!-- Línea 155-161: Selector de minutos -->
+        <!-- Selector de minutos -->
         <div class="time-selector">
-            <label>Minutos</label>
+            <label>⏱️ MINUTOS</label>
             <div>
                 <input type="number" id="minutos" class="time-input" value="20" min="1" max="120" step="1">
             </div>
         </div>
 
-        <!-- Línea 164-167: Display del cronómetro -->
+        <!-- DISPLAY ESTILO RELOJ DIGITAL ANTIGUO -->
         <div class="display">
             <div id="cronometro" class="cronometro">20:00</div>
         </div>
 
-        <!-- Línea 170-173: Botón único (SOLO INICIAR) -->
+        <!-- Botón único -->
         <div class="buttons">
             <button class="btn-start" onclick="iniciarCronometro()">
-                <i class="fas fa-play"></i> Iniciar horneado
+                <i class="fas fa-play"></i> INICIAR
             </button>
         </div>
 
-        <!-- Línea 176-180: Mensaje de alerta cuando termina -->
+        <!-- Mensaje de alerta -->
         <div id="alerta" class="alert-message">
             <i class="fas fa-bell"></i>
-            🎉 ¡El pan está listo! 🎉
+            ⚡ ¡PAN LISTO! ⚡
             <i class="fas fa-bell"></i>
         </div>
 
-        <!-- Línea 183-186: Footer informativo -->
+        <!-- Footer -->
         <footer>
-            <i class="fas fa-volume-up"></i> Alarma sonora al finalizar
+            <i class="fas fa-volume-up"></i> ALARMA SONORA · RELOJ DIGITAL
         </footer>
     </div>
 
     <script>
         // ============================================================
-        // LÍNEAS 195-320: CÓDIGO JAVASCRIPT (Lógica del cronómetro)
+        // LÍNEAS 210-400: CÓDIGO JAVASCRIPT - Lógica del cronómetro
         // ============================================================
 
-        // ========== VARIABLES GLOBALES (Líneas 198-207) ==========
-        // tiempoRestante: segundos que quedan en el cronómetro
         let tiempoRestante = 0;
-        
-        // temporizadorActivo: indica si el cronómetro está corriendo
         let temporizadorActivo = false;
-        
-        // intervalo: referencia al setInterval para poder detenerlo
         let intervalo = null;
-        
-        // alarmaActiva: evita múltiples alarmas al mismo tiempo
         let alarmaActiva = false;
-        
-        // contextoAudio: objeto para generar sonidos (Web Audio API)
         let contextoAudio = null;
-        
-        // osciladoresActivos: almacena sonidos activos para poder detenerlos
         let osciladoresActivos = [];
 
-        // ============================================================
-        // FUNCIÓN: actualizarDisplay() (Líneas 212-221)
-        // PROPÓSITO: Actualiza el texto del cronómetro en pantalla
-        // FORMATO: MM:SS (ejemplo: 05:30)
-        // ============================================================
         function actualizarDisplay() {
-            // Calcular minutos y segundos
             const minutos = Math.floor(tiempoRestante / 60);
             const segundos = tiempoRestante % 60;
-            
-            // Obtener el elemento HTML y actualizar su contenido
             const display = document.getElementById('cronometro');
-            // padStart(2, '0') asegura que siempre tenga dos dígitos
             display.textContent = `${minutos.toString().padStart(2, '0')}:${segundos.toString().padStart(2, '0')}`;
+            
+            // Efecto de parpadeo sutil al cambiar los números
+            display.style.transform = 'scale(1.02)';
+            setTimeout(() => {
+                display.style.transform = 'scale(1)';
+            }, 50);
         }
 
-        // ============================================================
-        // FUNCIÓN: iniciarCronometro() (Líneas 226-256)
-        // PROPÓSITO: Inicia la cuenta regresiva
-        // ============================================================
         function iniciarCronometro() {
-            // Si ya hay un cronómetro activo, lo detenemos primero
             if (temporizadorActivo) {
                 detenerCronometro();
             }
             
-            // Obtener los minutos ingresados por el usuario
             const minutos = parseInt(document.getElementById('minutos').value) || 0;
             
-            // Validar que el tiempo sea válido
             if (minutos <= 0) {
-                alert('Ingresa un tiempo válido (mayor a 0 minutos)');
+                alert('INGRESA UN TIEMPO VÁLIDO');
                 return;
             }
             
-            // Convertir minutos a segundos
             tiempoRestante = minutos * 60;
-            
-            // Actualizar pantalla
             actualizarDisplay();
-            
-            // Activar el temporizador
             temporizadorActivo = true;
             
-            // Crear intervalo que se ejecuta cada 1 segundo (1000 ms)
             intervalo = setInterval(() => {
                 if (tiempoRestante <= 0) {
-                    // Si llegó a cero: detener y activar alarma
                     detenerCronometro();
                     reproducirAlarma();
                     mostrarAlerta();
                 } else {
-                    // Decrementar un segundo
                     tiempoRestante--;
                     actualizarDisplay();
                 }
             }, 1000);
         }
 
-        // ============================================================
-        // FUNCIÓN: detenerCronometro() (Líneas 259-268)
-        // PROPÓSITO: Detiene la cuenta regresiva
-        // ============================================================
         function detenerCronometro() {
-            // Limpiar el intervalo si existe
             if (intervalo) {
                 clearInterval(intervalo);
                 intervalo = null;
             }
-            // Desactivar la bandera
             temporizadorActivo = false;
-            // Detener cualquier alarma activa
             detenerAlarma();
         }
 
-        // ============================================================
-        // FUNCIÓN: detenerAlarma() (Líneas 271-289)
-        // PROPÓSITO: Detiene todos los sonidos de alarma
-        // ============================================================
         function detenerAlarma() {
             alarmaActiva = false;
             
-            // Detener todos los osciladores activos
             osciladoresActivos.forEach(oscilador => {
                 try {
                     oscilador.stop();
-                } catch(e) {
-                    // Ignorar errores (oscilador ya detenido)
-                }
+                } catch(e) {}
             });
             osciladoresActivos = [];
             
-            // Cerrar el contexto de audio
             if (contextoAudio) {
                 try {
                     contextoAudio.close();
@@ -360,116 +402,99 @@
             }
         }
 
-        // ============================================================
-        // FUNCIÓN: reproducirAlarma() (Líneas 292-360)
-        // PROPÓSITO: Genera una alarma sonora de 5 segundos
-        // ============================================================
         function reproducirAlarma() {
-            // Evitar múltiples alarmas simultáneas
             if (alarmaActiva) return;
             alarmaActiva = true;
             
             try {
-                // Crear contexto de audio (API estándar de navegadores)
                 contextoAudio = new (window.AudioContext || window.webkitAudioContext)();
                 
-                // Duración total de la alarma
-                const duracionTotal = 5;
+                const duracionTotal = 6;
                 const inicio = contextoAudio.currentTime;
                 
-                // ====================================================
-                // FUNCIÓN INTERNA: crearOscilador() (Líneas 307-336)
-                // Crea un sonido con frecuencia, duración y volumen
-                // ====================================================
-                const crearOscilador = (frecuencia, inicioOffset, duracion, volumen = 0.35) => {
-                    // Crear oscilador (generador de onda)
+                const crearOscilador = (frecuencia, inicioOffset, duracion, volumen = 0.4) => {
                     const osc = contextoAudio.createOscillator();
-                    // Crear control de volumen
                     const gain = contextoAudio.createGain();
                     
-                    // Onda cuadrada = sonido más fuerte y notorio
-                    osc.type = 'square';
+                    osc.type = 'sawtooth'; // Onda diente de sierra para sonido más vintage
                     osc.frequency.value = frecuencia;
                     
-                    // Conectar componentes
                     osc.connect(gain);
                     gain.connect(contextoAudio.destination);
                     
-                    // Configurar volumen inicial en 0
                     gain.gain.value = 0;
-                    
-                    // Tiempo exacto de inicio
                     const tiempoInicio = inicio + inicioOffset;
                     
-                    // Envolvente de volumen: subida rápida, bajada gradual
                     gain.gain.setValueAtTime(0, tiempoInicio);
                     gain.gain.linearRampToValueAtTime(volumen, tiempoInicio + 0.05);
                     gain.gain.exponentialRampToValueAtTime(0.00001, tiempoInicio + duracion);
                     
-                    // Iniciar y detener el sonido
                     osc.start(tiempoInicio);
                     osc.stop(tiempoInicio + duracion);
                     
-                    // Guardar referencia
                     osciladoresActivos.push(osc);
                     return osc;
                 };
                 
-                // ====================================================
-                // SECUENCIA DE ALARMA (5 segundos) - Líneas 340-353
-                // ====================================================
-                crearOscilador(880, 0, 1.5, 0.4);      // 0-1.5s: 880 Hz (agudo)
-                crearOscilador(660, 1.5, 1.0, 0.45);    // 1.5-2.5s: 660 Hz (medio)
-                crearOscilador(880, 2.5, 1.0, 0.4);     // 2.5-3.5s: 880 Hz (agudo)
-                crearOscilador(440, 3.5, 1.0, 0.45);    // 3.5-4.5s: 440 Hz (grave)
-                crearOscilador(880, 4.5, 0.5, 0.5);     // 4.5-5.0s: 880 Hz (final)
+                // Secuencia de alarma estilo vintage (sonido de reloj antiguo)
+                crearOscilador(880, 0, 0.8, 0.45);
+                crearOscilador(660, 0.9, 0.8, 0.45);
+                crearOscilador(880, 1.8, 0.8, 0.45);
+                crearOscilador(660, 2.7, 0.8, 0.45);
+                crearOscilador(880, 3.6, 1.2, 0.5);
+                crearOscilador(440, 4.9, 1.0, 0.5);
                 
-                // ====================================================
-                // VIBRACIÓN PARA MÓVILES (Líneas 356-363)
-                // ====================================================
+                // Vibración estilo vintage (pulsos largos)
                 if ('vibrate' in navigator) {
                     navigator.vibrate([
-                        400, 100, 400, 100,  // 0-1.0s
-                        400, 100, 400, 100,  // 1.0-2.0s
-                        400, 100, 400, 100,  // 2.0-3.0s
-                        400, 100, 400        // 3.0-4.0s
+                        600, 100,
+                        600, 100,
+                        600, 100,
+                        600, 100,
+                        800
                     ]);
                 }
                 
-                // Auto-detener después de 5.5 segundos
                 setTimeout(() => {
                     if (alarmaActiva) detenerAlarma();
-                }, 5500);
+                }, 6200);
                 
             } catch(e) {
-                // Fallback si el navegador no soporta Web Audio
                 console.log('Alarma no disponible');
                 const alerta = document.getElementById('alerta');
-                alerta.style.backgroundColor = '#e53e3e';
-                alerta.style.color = 'white';
+                alerta.style.backgroundColor = '#2a1a0a';
+                alerta.style.borderColor = '#ff6a2e';
                 setTimeout(() => {
                     alerta.style.backgroundColor = '';
-                    alerta.style.color = '';
-                }, 5000);
+                    alerta.style.borderColor = '';
+                }, 6000);
             }
         }
 
-        // ============================================================
-        // FUNCIÓN: mostrarAlerta() (Líneas 365-372)
-        // PROPÓSITO: Muestra mensaje visual cuando termina el tiempo
-        // ============================================================
         function mostrarAlerta() {
             const alerta = document.getElementById('alerta');
             alerta.classList.add('show');
+            
+            // Efecto de parpadeo en el display al terminar
+            const display = document.getElementById('cronometro');
+            let parpadeos = 0;
+            const intervalParpadeo = setInterval(() => {
+                if (parpadeos >= 6) {
+                    clearInterval(intervalParpadeo);
+                    display.style.opacity = '1';
+                } else {
+                    display.style.opacity = parpadeos % 2 === 0 ? '0.3' : '1';
+                    parpadeos++;
+                }
+            }, 300);
+            
             setTimeout(() => {
                 alerta.classList.remove('show');
+                clearInterval(intervalParpadeo);
+                display.style.opacity = '1';
             }, 6000);
         }
 
-        // ============================================================
-        // INICIALIZACIÓN (Líneas 375-381)
-        // Se ejecuta automáticamente al cargar la página
-        // ============================================================
         window.onload = () => {
             const minutosDefault = 20;
             document.getElementById('minutos').value = minutosDefault;
